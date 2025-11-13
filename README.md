@@ -1,21 +1,27 @@
 # Isolated-Cybersecurity-Home-Lab-Kali-ARM-DVWA-
-Establish an ARM-native penetration testing environment using Kali Linux and the Damn Vulnerable Web Application (DVWA) in VirtualBox.
-Goal:	Establish an ARM-native penetration testing environment using Kali Linux and the Damn Vulnerable Web Application (DVWA) in VirtualBox.	
+# ⚙️ ISOLATED CYBERSECURITY HOME LAB: KALI (ARM64) + DVWA
 
-System Specs	
-Host OS: macOS (Apple Silicon M-series)
+This document details the setup and troubleshooting required to build a functional, isolated Penetration Testing lab environment on an Apple Silicon (ARM64) host.
 
-Attacker VM: Kali Linux (ARM64)
+## 🖥️ System & Environment
+* **Host OS:** macOS (Apple Silicon M-series)
+* **Attacker VM:** Kali Linux (ARM64)
+* **Target:** DVWA (Damn Vulnerable Web Application) running locally on Kali.
+* **Hypervisor:** Oracle VM VirtualBox
 
-Target VM: DVWA (Running locally on Kali/ARM)
+---
 
-Hypervisor: Oracle VirtualBox
+## 💥 Key Hurdles Encountered & Solutions
 
-Key Hurdles & Solutions (The Value)	
-1. ARM Architecture Incompatibility: Attempted to use Metasploitable 2/3 (x86), which failed on the ARM Mac. Solution: Switched to installing DVWA directly onto a compatible Kali ARM VM.
+| Hurdle | Cause | Solution |
+| :--- | :--- | :--- |
+| **1. Architecture Conflict** | Metasploitable 2/3 and public Docker images were all x86, incompatible with ARM64. | Abandoned incompatible images. Switched to manually installing LAMP/DVWA directly onto the Kali ARM VM. |
+| **2. Insufficient Disk Space** | Default 18GB disk ran out of space during MariaDB installation. | **1.** Shut down Kali. **2.** Ran `VBoxManage modifyhd` on the Mac host to resize the VDI to 50GB. **3.** Used `sudo gparted` inside Kali to expand the partition. |
+| **3. Networking (Git Clone Fails)** | Kali was unable to resolve DNS names to connect to GitHub (`Connection timed out`). | Manually fixed DNS by editing `/etc/resolv.conf` to use `nameserver 8.8.8.8` (Google DNS). |
+| **4. Web Server Not Processing PHP** | Apache was serving the DVWA config file as plain text (PHP execution was disabled). | **1.** Confirmed MariaDB/Apache installation using correct packages. **2.** Fixed the `DocumentRoot` in `/etc/apache2/sites-available/000-default.conf`. **3.** Ensured the PHP handler was active. |
+| **5. Database Connection Failed** | MariaDB root user's authentication method was incompatible with PHP. | Logged into MariaDB console and ran `SET PASSWORD FOR 'root'@'localhost' = PASSWORD('');` to enable legacy login compatibility. |
 
-2. Virtual Disk Space: Ran out of space installing MariaDB. Solution: Used VBoxManage modifyhd on the host to resize the VDI, then GParted inside Kali to extend the partition.
+---
 
-3. DVWA Setup Failures: Encountered "Connection Timed Out" (DNS error) and "PHP Plain Text" (PHP handler failure). Solution: Manually fixed DNS (/etc/resolv.conf) and repeatedly used sudo a2enmod php8.3 to ensure the Apache handler was active.
-
-Outcome: Successfully deployed a fully functional, isolated, and compatible hacking lab with DVWA accessible on http://127.0.0.1/dvwa/.
+## ✅ Final Outcome
+The lab is fully functional. DVWA is accessible at **http://127.0.0.1/dvwa/** and ready for penetration testing projects.
